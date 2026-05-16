@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .auth-wrap { max-width: 420px; margin: 60px auto; }
+  .auth-title { font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: 3px; color: white; text-align: center; margin-bottom: 4px; }
+  .auth-sub { text-align: center; color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+  .form-group { margin-bottom: 18px; }
+  .auth-footer { text-align: center; margin-top: 20px; font-size: 14px; color: var(--muted); }
+  .auth-footer a { color: var(--red); }
+</style>
+
+<div class="auth-wrap">
+  <div class="auth-title">🎬 CineBook</div>
+  <div class="auth-sub">Sign in to book your seats</div>
+  <div class="card">
+    <form method="POST">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="you@email.com" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn" style="width:100%; margin-top:8px; padding:12px;">Login</button>
+    </form>
+  </div>
+  <div class="auth-footer">Don't have an account? <a href="{{ url_for('register') }}">Sign up</a></div>
+</div>
+{% endblock %}

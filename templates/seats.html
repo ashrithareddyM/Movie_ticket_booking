@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .show-info-bar { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; gap: 32px; margin-bottom: 28px; flex-wrap: wrap; }
+  .info-item .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .info-item .value { font-size: 15px; color: white; font-weight: 500; margin-top: 2px; }
+  .screen-wrap { text-align: center; margin-bottom: 24px; }
+  .screen-line { height: 4px; background: linear-gradient(to right, transparent, var(--red), transparent); border-radius: 2px; margin-bottom: 6px; }
+  .screen-label { font-size: 11px; color: var(--muted); letter-spacing: 2px; }
+  .seat-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; max-width: 520px; margin: 0 auto 24px; }
+  .seat {
+    aspect-ratio: 1;
+    border-radius: 5px;
+    font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: transform 0.1s;
+    color: white;
+  }
+  .seat.available { background: #2a2a4a; border-color: rgba(255,255,255,0.1); }
+  .seat.available:hover { background: rgba(233,69,96,0.4); border-color: var(--red); transform: scale(1.1); }
+  .seat.booked { background: #333; opacity: 0.35; cursor: not-allowed; }
+  .seat.selected { background: var(--red); border-color: var(--red); transform: scale(1.05); }
+  .legend { display: flex; justify-content: center; gap: 24px; margin-bottom: 28px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+  .legend-dot { width: 16px; height: 16px; border-radius: 4px; }
+  .summary-bar { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .selected-info { font-size: 14px; color: var(--muted); }
+  .selected-info span { color: white; font-weight: 600; }
+</style>
+
+<a href="javascript:history.back()" style="color:var(--muted); font-size:13px; display:inline-flex; align-items:center; gap:6px; margin-bottom:20px;">← Back to Shows</a>
+
+<div class="page-title">Select Seats</div>
+
+<div class="show-info-bar">
+  <div class="info-item"><div class="label">Movie</div><div class="value">{{ show.title }}</div></div>
+  <div class="info-item"><div class="label">Theatre</div><div class="value">{{ show.theatre_name }}</div></div>
+  <div class="info-item"><div class="label">Date</div><div class="value">{{ show.show_date }}</div></div>
+  <div class="info-item"><div class="label">Time</div><div class="value">{{ show.show_time }}</div></div>
+  <div class="info-item"><div class="label">Format</div><div class="value">{{ show.format }}</div></div>
+  <div class="info-item"><div class="label">Language</div><div class="value">{{ show.language }}</div></div>
+</div>
+
+<div class="screen-wrap">
+  <div class="screen-line"></div>
+  <div class="screen-label">SCREEN THIS WAY</div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#2a2a4a; border:1px solid rgba(255,255,255,0.15);"></div> Available</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--red);"></div> Selected</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#333; opacity:0.4;"></div> Booked</div>
+</div>
+
+<form method="POST" action="{{ url_for('payment') }}" id="seat-form">
+  <input type="hidden" name="show_id" value="{{ show.show_id }}">
+  <div class="seat-grid">
+    {% for seat in seats %}
+    <div class="seat {{ 'booked' if seat.seat_status == 'Booked' else 'available' }}"
+         data-seat-id="{{ seat.seat_id }}"
+         data-seat-num="{{ seat.seat_number }}"
+         onclick="toggleSeat(this)">
+      {{ seat.seat_number }}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div id="selected-seats-inputs"></div>
+
+  <div class="summary-bar">
+    <div class="selected-info">
+      Selected: <span id="seat-count">0</span> seat(s) —
+      <span id="seat-names">None</span>
+    </div>
+    <button type="submit" class="btn" id="proceed-btn" disabled style="opacity:0.5;">Proceed to Payment</button>
+  </div>
+</form>
+
+<script>
+  const price = {{ show.price or 200 }};
+  let selected = [];
+
+  function toggleSeat(el) {
+    if (el.classList.contains('booked')) return;
+    const id = el.dataset.seatId;
+    const num = el.dataset.seatNum;
+    if (el.classList.contains('selected')) {
+      el.classList.remove('selected');
+      el.classList.add('available');
+      selected = selected.filter(s => s.id !== id);
+    } else {
+      el.classList.remove('available');
+      el.classList.add('selected');
+      selected.push({ id, num });
+    }
+    updateSummary();
+  }
+
+  function updateSummary() {
+    document.getElementById('seat-count').textContent = selected.length;
+    document.getElementById('seat-names').textContent = selected.length ? selected.map(s => s.num).join(', ') : 'None';
+    const btn = document.getElementById('proceed-btn');
+    btn.disabled = selected.length === 0;
+    btn.style.opacity = selected.length ? '1' : '0.5';
+    const container = document.getElementById('selected-seats-inputs');
+    container.innerHTML = '';
+    selected.forEach(s => {
+      const inp = document.createElement('input');
+      inp.type = 'hidden';
+      inp.name = 'seat_ids';
+      inp.value = s.id;
+      container.appendChild(inp);
+    });
+  }
+</script>
+{% endblock %}

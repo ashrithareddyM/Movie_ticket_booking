@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineBook</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #e94560;
+    --dark: #0f0f1a;
+    --dark2: #1a1a2e;
+    --dark3: #16213e;
+    --text: #e0e0e0;
+    --muted: #888;
+    --card: #1e1e35;
+    --border: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--dark); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+  a { color: inherit; text-decoration: none; }
+
+  nav {
+    background: var(--dark2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .nav-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--red);
+    letter-spacing: 2px;
+  }
+  .nav-links { display: flex; align-items: center; gap: 24px; font-size: 14px; }
+  .nav-links a { color: var(--muted); transition: color 0.2s; }
+  .nav-links a:hover { color: white; }
+  .nav-user { color: var(--text); font-size: 13px; }
+  .nav-logout {
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-logout:hover { background: var(--red); color: white; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 20px; }
+
+  .btn {
+    display: inline-block;
+    background: var(--red);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+  }
+  .btn-outline:hover { background: var(--red); color: white; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .flash { padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
+  .flash.success { background: rgba(40,200,100,0.15); border: 1px solid rgba(40,200,100,0.3); color: #4ddd90; }
+  .flash.danger { background: rgba(233,69,96,0.15); border: 1px solid rgba(233,69,96,0.3); color: var(--red); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge-red { background: rgba(233,69,96,0.2); color: var(--red); border: 1px solid rgba(233,69,96,0.3); }
+  .badge-blue { background: rgba(80,140,255,0.15); color: #7aaaff; border: 1px solid rgba(80,140,255,0.2); }
+  .badge-green { background: rgba(40,200,100,0.15); color: #4ddd90; border: 1px solid rgba(40,200,100,0.2); }
+  .badge-gray { background: rgba(255,255,255,0.08); color: var(--muted); border: 1px solid var(--border); }
+
+  select, input[type=text], input[type=email], input[type=password], input[type=date], input[type=tel] {
+    background: var(--dark3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  select:focus, input:focus { border-color: var(--red); }
+  label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .page-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 2px;
+    color: white;
+    margin-bottom: 4px;
+  }
+  .page-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+</style>
+</head>
+<body>
+
+{% if session.user_id %}
+<nav>
+  <div class="nav-brand">🎬 CineBook</div>
+  <div class="nav-links">
+    <a href="{{ url_for('index') }}">Movies</a>
+    <a href="{{ url_for('history') }}">My Bookings</a>
+    <span class="nav-user">Hi, {{ session.user_name }}</span>
+    <a href="{{ url_for('logout') }}" class="nav-logout">Logout</a>
+  </div>
+</nav>
+{% endif %}
+
+<div class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+
+</body>
+</html>

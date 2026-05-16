@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .show-header { display: flex; gap: 24px; margin-bottom: 32px; }
+  .show-poster { width: 120px; height: 180px; object-fit: cover; border-radius: 10px; flex-shrink: 0; background: var(--dark2); }
+  .show-poster-ph { width: 120px; height: 180px; border-radius: 10px; background: var(--dark2); display: flex; align-items: center; justify-content: center; font-size: 40px; flex-shrink: 0; }
+  .show-meta { display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+  .show-title { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: white; letter-spacing: 2px; }
+  .filter-row { display: grid; grid-template-columns: 2fr 1fr auto; gap: 12px; margin-bottom: 28px; align-items: end; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; }
+  .show-list { display: flex; flex-direction: column; gap: 14px; }
+  .show-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .show-item:hover { border-color: rgba(233,69,96,0.4); }
+  .theatre-name { font-size: 15px; font-weight: 600; color: white; margin-bottom: 4px; }
+  .theatre-loc { font-size: 13px; color: var(--muted); }
+  .show-time-box { text-align: center; background: var(--dark3); border-radius: 8px; padding: 10px 20px; }
+  .show-time { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--red); letter-spacing: 1px; }
+  .show-day { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .show-price { font-size: 18px; font-weight: 600; color: white; }
+  .seats-left { font-size: 12px; color: var(--muted); }
+  .no-shows { text-align: center; padding: 60px; color: var(--muted); }
+</style>
+
+<a href="{{ url_for('index') }}" style="color:var(--muted); font-size:13px; display:inline-flex; align-items:center; gap:6px; margin-bottom:20px;">← Back to Movies</a>
+
+<div class="show-header">
+  {% if movie.poster_url %}
+  <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="show-poster">
+  {% else %}
+  <div class="show-poster-ph">🎬</div>
+  {% endif %}
+  <div class="show-meta">
+    <div class="show-title">{{ movie.title }}</div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <span class="badge badge-red">{{ movie.format or '2D' }}</span>
+      <span class="badge badge-blue">{{ movie.language }}</span>
+      {% if movie.genre %}<span class="badge badge-gray">{{ movie.genre }}</span>{% endif %}
+    </div>
+    <div style="font-size:13px; color:var(--muted);">⭐ {{ movie.rating }} · {{ movie.duration }} mins</div>
+  </div>
+</div>
+
+<form method="GET">
+  <input type="hidden" name="city_id" value="{{ selected_city }}">
+  <div class="filter-row">
+    <div>
+      <label>City</label>
+      <select name="city_id">
+        <option value="">All Cities</option>
+        {% for city in cities %}
+        <option value="{{ city.city_id }}" {% if selected_city == city.city_id|string %}selected{% endif %}>{{ city.city_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Date</label>
+      <input type="date" name="show_date" value="{{ show_date }}">
+    </div>
+    <div>
+      <button type="submit" class="btn" style="padding:10px 20px;">Search</button>
+    </div>
+  </div>
+</form>
+
+{% if shows %}
+<div class="show-list">
+  {% for show in shows %}
+  <div class="show-item">
+    <div>
+      <div class="theatre-name">{{ show.theatre_name }}</div>
+      <div class="theatre-loc">📍 {{ show.location }}</div>
+    </div>
+    <div class="show-time-box">
+      <div class="show-time">{{ show.show_time }}</div>
+      <div class="show-day">{{ show.show_date }}</div>
+    </div>
+    <div style="text-align:center;">
+      <div class="show-price">₹{{ show.price or 200 }}</div>
+      <div class="seats-left">{{ show.available_seats or 'Available' }} seats left</div>
+    </div>
+    <a href="{{ url_for('seats', show_id=show.show_id) }}" class="btn">Select Seats</a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="no-shows">
+  <div style="font-size:48px; margin-bottom:12px;">🎭</div>
+  <div style="font-size:16px; color:white; margin-bottom:8px;">No shows available</div>
+  <div style="font-size:14px;">Try a different date or city</div>
+</div>
+{% endif %}
+{% endblock %}

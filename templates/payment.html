@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .pay-layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
+  .method-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .pay-method {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--dark3);
+  }
+  .pay-method:hover { border-color: var(--red); }
+  .pay-method.active { border-color: var(--red); background: rgba(233,69,96,0.1); }
+  .pay-method input { display: none; }
+  .pay-icon { font-size: 28px; margin-bottom: 8px; }
+  .pay-label { font-size: 13px; color: var(--text); font-weight: 500; }
+  .upi-input-wrap { margin-top: 16px; display: none; }
+  .upi-input-wrap.show { display: block; }
+  .summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; position: sticky; top: 80px; }
+  .summary-title { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 16px; }
+  .summary-row { display: flex; justify-content: space-between; font-size: 14px; padding: 8px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .summary-row.total { font-size: 16px; font-weight: 600; color: white; border-bottom: none; padding-top: 14px; }
+  .seat-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .seat-chip { background: var(--dark3); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--text); }
+</style>
+
+<div class="page-title">Payment</div>
+<div class="page-sub">Complete your booking</div>
+
+<form method="POST" action="{{ url_for('confirm_payment') }}">
+  <input type="hidden" name="show_id" value="{{ show_id }}">
+  {% for sid in seat_ids %}
+  <input type="hidden" name="seat_ids" value="{{ sid }}">
+  {% endfor %}
+
+  <div class="pay-layout">
+    <div>
+      <div class="card" style="margin-bottom:20px;">
+        <div style="font-size:15px; font-weight:600; color:white; margin-bottom:16px;">Choose Payment Method</div>
+        <div class="method-grid">
+          <label class="pay-method active" onclick="selectMethod(this, 'upi')">
+            <input type="radio" name="payment_method" value="UPI" checked>
+            <div class="pay-icon">📱</div>
+            <div class="pay-label">UPI</div>
+          </label>
+          <label class="pay-method" onclick="selectMethod(this, 'card')">
+            <input type="radio" name="payment_method" value="Card">
+            <div class="pay-icon">💳</div>
+            <div class="pay-label">Card</div>
+          </label>
+          <label class="pay-method" onclick="selectMethod(this, 'netbanking')">
+            <input type="radio" name="payment_method" value="Net Banking">
+            <div class="pay-icon">🏦</div>
+            <div class="pay-label">Net Banking</div>
+          </label>
+        </div>
+
+        <div class="upi-input-wrap show" id="upi-wrap">
+          <label>UPI ID</label>
+          <input type="text" placeholder="yourname@upi">
+        </div>
+        <div class="upi-input-wrap" id="card-wrap">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div><label>Card Number</label><input type="text" placeholder="1234 5678 9012 3456"></div>
+            <div><label>Name on Card</label><input type="text" placeholder="Your Name"></div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div><label>Expiry</label><input type="text" placeholder="MM/YY"></div>
+            <div><label>CVV</label><input type="text" placeholder="•••"></div>
+          </div>
+        </div>
+        <div class="upi-input-wrap" id="net-wrap">
+          <label>Select Bank</label>
+          <select><option>SBI</option><option>HDFC</option><option>ICICI</option><option>Axis</option><option>Kotak</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="summary-card">
+        <div class="summary-title">Booking Summary</div>
+        <div class="summary-row"><span>Movie</span><span style="color:white;">{{ show.title }}</span></div>
+        <div class="summary-row"><span>Theatre</span><span style="color:white;">{{ show.theatre_name }}</span></div>
+        <div class="summary-row"><span>Date & Time</span><span style="color:white;">{{ show.show_date }} · {{ show.show_time }}</span></div>
+        <div class="summary-row" style="flex-direction:column; gap:8px;">
+          <span>Seats</span>
+          <div class="seat-chips">
+            {% for s in seats %}<div class="seat-chip">{{ s.seat_number }}</div>{% endfor %}
+          </div>
+        </div>
+        <div class="summary-row"><span>{{ seats|length }} × ₹{{ show.price }}</span><span style="color:white;">₹{{ (show.price * seats|length)|int }}</span></div>
+        <div class="summary-row"><span>Convenience fee</span><span style="color:white;">₹{{ (seats|length * 15)|int }}</span></div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span style="color:var(--red);">₹{{ (total + seats|length * 15)|int }}</span>
+        </div>
+        <button type="submit" class="btn" style="width:100%; margin-top:16px; padding:13px; font-size:15px;">
+          Pay ₹{{ (total + seats|length * 15)|int }}
+        </button>
+        <div style="text-align:center; font-size:12px; color:var(--muted); margin-top:12px;">🔒 Secure payment</div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script>
+  function selectMethod(el, type) {
+    document.querySelectorAll('.pay-method').forEach(m => m.classList.remove('active'));
+    el.classList.add('active');
+    el.querySelector('input').checked = true;
+    document.getElementById('upi-wrap').classList.toggle('show', type === 'upi');
+    document.getElementById('card-wrap').classList.toggle('show', type === 'card');
+    document.getElementById('net-wrap').classList.toggle('show', type === 'netbanking');
+  }
+</script>
+{% endblock %}

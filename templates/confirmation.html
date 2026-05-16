@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .confirm-wrap { max-width: 560px; margin: 0 auto; text-align: center; }
+  .success-icon { font-size: 64px; margin-bottom: 16px; animation: pop 0.4s ease; }
+  @keyframes pop { 0% { transform: scale(0); } 80% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  .confirm-title { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: white; letter-spacing: 2px; margin-bottom: 4px; }
+  .confirm-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+  .ticket-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    text-align: left;
+    margin-bottom: 24px;
+  }
+  .ticket-header { background: var(--red); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .ticket-movie { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1px; color: white; }
+  .ticket-id { font-size: 12px; color: rgba(255,255,255,0.7); }
+  .ticket-body { padding: 20px; }
+  .ticket-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .ticket-row:last-child { border-bottom: none; }
+  .ticket-label { color: var(--muted); }
+  .ticket-value { color: white; font-weight: 500; }
+  .ticket-seats { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ticket-seat { background: var(--dark3); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--text); }
+  .actions { display: flex; gap: 12px; justify-content: center; }
+</style>
+
+<div class="confirm-wrap">
+  <div class="success-icon">🎉</div>
+  <div class="confirm-title">Booking Confirmed!</div>
+  <div class="confirm-sub">Your tickets are booked. Enjoy the movie!</div>
+
+  {% if booking %}
+  <div class="ticket-card">
+    <div class="ticket-header">
+      <div class="ticket-movie">{{ booking.title }}</div>
+      <div class="ticket-id">Booking #{{ booking.booking_id }}</div>
+    </div>
+    <div class="ticket-body">
+      <div class="ticket-row">
+        <span class="ticket-label">Theatre</span>
+        <span class="ticket-value">{{ booking.theatre_name }}</span>
+      </div>
+      <div class="ticket-row">
+        <span class="ticket-label">Date</span>
+        <span class="ticket-value">{{ booking.show_date }}</span>
+      </div>
+      <div class="ticket-row">
+        <span class="ticket-label">Time</span>
+        <span class="ticket-value">{{ booking.show_time }}</span>
+      </div>
+      <div class="ticket-row">
+        <span class="ticket-label">Language / Format</span>
+        <span class="ticket-value">{{ booking.language }} · {{ booking.format }}</span>
+      </div>
+      <div class="ticket-row">
+        <span class="ticket-label">Seat</span>
+        <span class="ticket-value">{{ booking.seat_number }}</span>
+      </div>
+      <div class="ticket-row">
+        <span class="ticket-label">Payment</span>
+        <span class="ticket-value">{{ booking.payment_method }} · ₹{{ booking.amount }}</span>
+      </div>
+      <div class="ticket-row">
+        <span class="ticket-label">Status</span>
+        <span class="ticket-value" style="color:#4ddd90;">✓ Confirmed</span>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="actions">
+    <a href="{{ url_for('index') }}" class="btn btn-outline">Browse More Movies</a>
+    <a href="{{ url_for('history') }}" class="btn">My Bookings</a>
+  </div>
+</div>
+{% endblock %}
